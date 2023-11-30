@@ -9,29 +9,13 @@
   let donutChart1Data;
   let donutChart2Data;
 
-  //Hier maak ik een functie aan die ik later kan hergebruiken. er word gefilterd op 'speler' uit data2012.json en de AllTD//
   function updateDataset() {
     var filterdataset = originalDataset.filter((speler) => speler.Player === currentPlayer);
     filterdataset = filterdataset.filter((speler) => speler.AllTD !== "");
     return filterdataset;
   }
 
-//hier maak ik een functie om de kleuren aan te passen van de barchart per speler later//
   function getColor(player) {
-    const colorArray = {
-      "Saquon Barkley": "#155ae6",
-      "Arian Foster": "#e64747",
-      "Adrian Peterson": "#008080",
-      "Kareem Hunt": "#ff7b29",
-      "Le'Veon Bell": "#e6a315",
-      "AllTD": "#155ae6",
-      "G": "#ff0000"
-    };
-
-    return colorArray[player] || "#808080";
-  }
-
-  function createColorScale(selectedPlayer) {
     const colorArray = {
       "Saquon Barkley": "#155ae6",
       "Arian Foster": "#e64747",
@@ -40,14 +24,9 @@
       "Le'Veon Bell": "#e6a315"
     };
 
-    const colorScale = d3.scaleOrdinal()
-      .domain(Object.keys(colorArray))
-      .range(Object.values(colorArray));
-
-    return colorScale(selectedPlayer);
+    return colorArray[player] || "#808080";
   }
 
-//margins voor de svg//
   const margin = { top: 20, right: 20, bottom: 50, left: 180 };
   const width = 900 - margin.left - margin.right;
   const height = 400 - margin.top - margin.bottom;
@@ -70,7 +49,6 @@
     });
   });
 
-//Na de update word updatechart opgeroepen opnieuw //
   afterUpdate(() => {
     updateChart();
   });
@@ -88,7 +66,6 @@
     img.style.transform = "translateX(-50%)";
   }
 
-//bars worden bij de functie updatechart telkens opnieuw getekend en verwijderd//
   function updateChart() {
     const filterdataset = updateDataset();
 
@@ -104,10 +81,8 @@
     const bars = svg.selectAll("rect")
       .data(filterdataset);
 
-//bars worden hier verwijderd//      
     bars.exit().remove();
 
-//bars worden hier getekend//    
     bars.enter().append("rect")
       .attr("x", 0)
       .attr("y", (d) => yScale(d.Season.toString()))
@@ -124,10 +99,8 @@
     const labels = svg.selectAll("text")
       .data(filterdataset);
 
-//labels worden verwijderd//      
     labels.exit().remove();
 
-//labels worden getekend hier//    
     labels.enter().append("text")
       .text(0)
       .attr("x", -5)
@@ -144,7 +117,6 @@
 
     console.log("Chart updated");
 
-//als donut chart geselecteerd worden word pas de donutchart gecreeert//    
     if (selectedChart === "donutcharts") {
       createDonutCharts();
       animateDonutCharts();
@@ -160,82 +132,43 @@
   }
   
   function createDonutCharts() {
-  const filterdataset = updateDataset();
+    const filterdataset = updateDataset();
 
-  // hier telt hij alle totale touchdowns op van het seizoen bij elkaar//
-  const totalAllTD = filterdataset.reduce((acc, season) => acc + Number(season.AllTD || 0), 0);
+    // Summing up AllTD across all seasons
+    const totalAllTD = filterdataset.reduce((acc, season) => acc + Number(season.AllTD || 0), 0);
 
-  // donutchart1 krijgt hier de kleuren die worden toegewezen bij de if statement//
-  donutChart1Data = [
-    { label: "AllTD", value: totalAllTD, color: getColor("AllTD") },
-    { label: "G", value: filterdataset[0].G, color: getColor("G") }
-  ];
+    // Assuming G, RshTD, and RecTD are values you want to include in the donut chart
+    donutChart1Data = [
+      { label: "AllTD", value: totalAllTD },
+      { label: "G", value: filterdataset[0].G }
+    ];
 
-  // kleur toepassen per speler//
-  if (currentPlayer === "Saquon Barkley") {
-    donutChart1Data[0].color = "#155ae6"; // Blue for "AllTD"
-    donutChart1Data[1].color = "#ff0000"; // Red for "G"
-  } else if (currentPlayer === "Arian Foster") {
-    donutChart1Data[0].color = "#e64747"; // Red for "AllTD"
-    donutChart1Data[1].color = "#00008b"; // Dark blue for "G"
-  } else if (currentPlayer === "Adrian Peterson") {
-    donutChart1Data[0].color = "#008080"; // Teal for "AllTD"
-    donutChart1Data[1].color = "#008000"; // Green for "G"
-  } else if (currentPlayer === "Kareem Hunt") {
-    donutChart1Data[0].color = "#ff7b29"; // Orange for "AllTD"
-    donutChart1Data[1].color = "#008000"; // Green for "G"
-  } else if (currentPlayer === "Le'Veon Bell") {
-    donutChart1Data[0].color = "#e6a315"; // Gold for "AllTD"
-    donutChart1Data[1].color = "#008000"; // Green for "G"
-  };
+    donutChart2Data = [
+      { label: "RshTD", value: filterdataset[0].RshTD },
+      { label: "RecTD", value: filterdataset[0].RecTD }
+    ];
 
-  //zelfde voor donutchart 2//
-  donutChart2Data = [
-    { label: "RshTD", value: filterdataset[0].RshTD, color: getColor("RshTD") },
-    { label: "RecTD", value: filterdataset[0].RecTD, color: getColor("RecTD") }
-  ];
+    createDonutChart("#donut-chart1", donutChart1Data, "Totale Touchdowns vs Totale Games");
+    createDonutChart("#donut-chart2", donutChart2Data, "Rushing Touchdowns vs Receiving Touchdowns");
+  }
 
-  if (currentPlayer === "Saquon Barkley") {
-    donutChart2Data[0].color = "#ff0000"; // Red for "RshTD"
-    donutChart2Data[1].color = "#155ae6"; // Blue for "RecTD"
-  } else if (currentPlayer === "Arian Foster") {
-    donutChart2Data[0].color = "#00008b"; // Dark blue for "RshTD"
-    donutChart2Data[1].color = "#e64747"; // Red for "RecTD"
-  } else if (currentPlayer === "Adrian Peterson") {
-    donutChart2Data[0].color = "#008000"; // Green for "RshTD"
-    donutChart2Data[1].color = "#008080"; // Teal for "RecTD"
-  } else if (currentPlayer === "Kareem Hunt") {
-    donutChart2Data[0].color = "#008000"; // Green for "RshTD"
-    donutChart2Data[1].color = "#ff7b29"; // Orange for "RecTD"
-  } else if (currentPlayer === "Le'Veon Bell") {
-    donutChart2Data[0].color = "#008000"; // Green for "RshTD"
-    donutChart2Data[1].color = "#e6a315"; // Gold for "RecTD"
-  };
-
-  //createdonutchart word aangeroepen//
-  createDonutChart("#donut-chart1", donutChart1Data, "AllTD vs G");
-  createDonutChart("#donut-chart2", donutChart2Data, "RshTD vs RecTD");
-}
-
-//functie om de donut chart te tekenen//
+  
   function createDonutChart(containerId, dataForDonut, chartTitle) {
-    const width = 500;
-    const height = 300;
+    const width = 400;
+    const height = 400;
     const margin = { top: 20, right: 20, bottom: 20, left: 20 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     const radius = Math.min(innerWidth, innerHeight) / 2;
-    
+
     const svgDonut = d3.select(containerId).html("").append("svg")
       .attr("width", width)
       .attr("height", height)
       .append("g")
       .attr("transform", `translate(${width / 2},${height / 2})`);
 
-    const selectedPlayerColor = createColorScale(currentPlayer);
-
     const color = d3.scaleOrdinal()
-      .range([selectedPlayerColor, "#fc8d62"]); // Update the color range
+      .range(["#66c2a5", "#fc8d62"]);
 
     const pie = d3.pie();
 
@@ -250,9 +183,9 @@
       .enter()
       .append("path")
       .attr("d", arc)
-      .attr("fill", (d, i) => dataForDonut[i].color); // Use dynamic color from data
+      .attr("fill", (d, i) => color(i));
 
-    // de waarde die binnen word weergeven, alle touchdowns bij elkaar opgeteld.
+    // Centered value
     svgDonut.append("text")
       .attr("x", 0)
       .attr("y", 0)
@@ -263,7 +196,7 @@
       .attr("fill", "black")
       .text(dataForDonut[0].value);
 
-    // legenda word hier getekend 
+    // Move legend outside the chart
     const legend = svgDonut.selectAll(".legend")
       .data(dataForDonut)
       .enter()
@@ -275,7 +208,7 @@
       .attr("x", 0)
       .attr("width", 18)
       .attr("height", 18)
-      .style("fill", (d, i) => dataForDonut[i].color); 
+      .style("fill", (d, i) => color(i));
 
     legend.append("text")
       .attr("x", 25)
@@ -284,11 +217,11 @@
       .style("text-anchor", "start")
       .text(d => d.label);
 
-    svgDonut.append("text")
-      .attr("x", 0)
-      .attr("y", -radius - 10)
-      .attr("text-anchor", "middle")
-      .text(chartTitle);
+    // svgDonut.append("text")
+    // .attr("x", 0)
+    // .attr("y", -radius - 10)
+    // .attr("text-anchor", "middle")
+    // .attr("fill", "black")
 
     console.log("Donut chart created");
   }
@@ -300,7 +233,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 90vh;
+    height: 100vh;
   }
 
   .content {
@@ -327,13 +260,13 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    background-color: #4c7aaf;
+    background-color: #155ae6;
     color: white;
     transition: background-color 0.3s ease;
   }
 
   button:hover {
-    background-color: #45a049;
+    background-color: #ff7b29;
   }
 
   img {
@@ -346,16 +279,11 @@
     z-index: 2;
   }
 
-  #chart, #donut-chart2 {
+  #chart, #donut-chart1, #donut-chart2 {
     width: 300px;
     height: 300px;
     margin: 10px;
   }
-
-  #donut-chart1{
-    margin-left: -200px;
-  }
-
 </style>
 
 <main>

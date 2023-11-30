@@ -4,9 +4,11 @@
     import BarChart from "../components/BarChart.svelte";
     import DonutChart from "../components/DonutChart.svelte";
 	import Test2 from "../components/Test2.svelte";
+    import Huiswerk from "../components/Huiswerk.svelte"
 </script>
 
 <main>
+    <!-- <Huiswerk/> -->
     <Test/>
     <!-- <BarChart/>
     <DonutChart/> -->
