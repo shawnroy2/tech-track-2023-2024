@@ -15,6 +15,7 @@
     filterdataset = filterdataset.filter((speler) => speler.AllTD !== "");
     return filterdataset;
   }
+  
 
 //hier maak ik een functie om de kleuren aan te passen van de barchart per speler later//
   function getColor(player) {
